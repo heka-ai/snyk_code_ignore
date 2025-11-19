@@ -30,12 +30,12 @@ fi
 # capture the footer of the output containing info about the snyk
 # organization, the test type (always "Static code analysis", and
 # the file path being scanned
-output_footer="$(cat "${SNYK_STDOUT}" | grep -A 4 '✔ Test completed')"
+output_footer="$(cat "${SNYK_STDOUT}" | grep -A 4 'Test Summary')"
 
 # parse out the project path, which we need in order to look for
 # for ignore rules within the files with reported issues. Append
 # a '/' at the end of the file path if not already present
-project_path="$(echo "${output_footer}" | grep 'Project path' | tr -d ' ' | cut -d ':' -f2)"
+project_path="$(echo "${output_footer}" | grep 'Project path' | tr -d ' ' | tr -d ' │' | cut -d ':' -f2)"
 if echo "${project_path}" | grep '/$' > /dev/null; then
     project_path="${project_path}"
 else
@@ -56,7 +56,7 @@ while read -r match; do
     # the title without finding severity (this is what we look for in ignore statements)
     cleaned_up_title="$(echo "${title_line}" | cut -d ']' -f2 | sed 's/^ *//g')"
 
-    path_line_number=$(($title_line_number + 1))
+    path_line_number=$(($title_line_number + 2))
     path_line="$(sed -n "${path_line_number}p" "${SNYK_STDOUT}")"
 
     offending_file="$(echo "${path_line}" | cut -d ':' -f2 | sed 's/^ *//g' | cut -d ',' -f1)"
